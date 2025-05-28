@@ -1,0 +1,1 @@
+self.font = pygame.font.Font('font/ThaleahFat.ttf', 26)

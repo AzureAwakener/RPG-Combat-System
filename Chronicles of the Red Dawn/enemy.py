@@ -1,6 +1,6 @@
 import pygame
 
-class Character():
+class Enemy():
     def __init__(self, name, hp, strength, defense):
         """Basic Attributes"""
         self.name = name
@@ -10,10 +10,10 @@ class Character():
         self.defense = defense
         self.is_alive = True
 
-class Fighter(Character):
+class Shogun(Enemy):
     def __init__(self, x, y, name):
-        super().__init__(name, hp = 300, strength = 25, defense = 20)
-
+        super().__init__(name, hp = 700, strength = 23, defense = 31)
+    
         #-------------------------------------
         #               Animations
         #-------------------------------------
@@ -24,10 +24,8 @@ class Fighter(Character):
         self.update_time = pygame.time.get_ticks()
         """Idle Animation"""
         temp_list = []
-        for i in range(4):
-            img = pygame.image.load(f'img/battlers/Brand/Idle/{i}.png')
-            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
-            img = pygame.transform.flip(img, flip_x= 180, flip_y= 0)
+        for i in range(6):
+            img = pygame.image.load(f'img/enemies/shogun/Idle/{i}.png')
             temp_list.append(img)
         self.animation_list.append(temp_list)
 
@@ -38,7 +36,7 @@ class Fighter(Character):
 
     def update(self):
         #frame goes faster the lower the cooldown goes
-        animation_cooldown = 175
+        animation_cooldown = 300
         #updates animation frames
         self.image = self.animation_list[self.action][self.frame_index]
         #checks if enough time has passed before it plays the next frame
