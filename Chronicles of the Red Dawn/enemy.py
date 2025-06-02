@@ -10,9 +10,9 @@ class Enemy():
         self.defense = defense
         self.is_alive = True
 
-class Shogun(Enemy):
+class Demonic_Samurai(Enemy):
     def __init__(self, x, y, name):
-        super().__init__(name, hp = 700, strength = 23, defense = 31)
+        super().__init__(name, hp = 200, strength = 48, defense = 10)
     
         #-------------------------------------
         #               Animations
@@ -24,11 +24,32 @@ class Shogun(Enemy):
         self.update_time = pygame.time.get_ticks()
         """Idle Animation"""
         temp_list = []
-        for i in range(6):
-            img = pygame.image.load(f'img/enemies/shogun/Idle/{i}.png')
+        for i in range(4):
+            img = pygame.image.load(f'img/enemies/demonic_samurai/Idle/{i}.png')
+            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             temp_list.append(img)
         self.animation_list.append(temp_list)
-
+        """Attack Animation"""
+        temp_list = []
+        for i in range(8):
+            img = pygame.image.load(f'img/enemies/demonic_samurai/Attack/{i}.png')
+            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
+            temp_list.append(img)
+        self.animation_list.append(temp_list)
+        """Hurt Animation"""
+        temp_list = []
+        for i in range(4):
+            img = pygame.image.load(f'img/enemies/demonic_samurai/Hurt/{i}.png')
+            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
+            temp_list.append(img)
+        self.animation_list.append(temp_list)
+        """Death Animation"""
+        temp_list = []
+        for i in range(4):
+            img = pygame.image.load(f'img/enemies/demonic_samurai/Dead/{i}.png')
+            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
+            temp_list.append(img)
+        self.animation_list.append(temp_list)
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
@@ -36,7 +57,7 @@ class Shogun(Enemy):
 
     def update(self):
         #frame goes faster the lower the cooldown goes
-        animation_cooldown = 300
+        animation_cooldown = 175
         #updates animation frames
         self.image = self.animation_list[self.action][self.frame_index]
         #checks if enough time has passed before it plays the next frame
@@ -49,9 +70,34 @@ class Shogun(Enemy):
                 self.frame_index = len(self.animation_list[self.action]) - 1
             else:
                 self.idle()
+
     def idle(self):
         #sets variable to idle animation
         self.action = 0
+        self.frame_index = 0
+        self.update_time = pygame.time.get_ticks()
+
+    def attack(self, target):
+        #damage calculation
+        self.damage = self.strength - target.defense
+        target.hp -= self.damage
+        target.hurt()
+        if target.hp <= 0:
+            target.hp = 0
+            target.is_alive = False
+            target.death()
+        #sets variable to attack animation
+        self.action = 1
+        self.frame_index = 0
+        self.update_time = pygame.time.get_ticks()
+
+    def hurt(self):
+        self.action = 2
+        self.frame_index = 0
+        self.update_time = pygame.time.get_ticks()
+    
+    def death(self):
+        self.action = 3
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
     
