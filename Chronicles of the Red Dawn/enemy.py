@@ -25,28 +25,28 @@ class Demonic_Samurai(Enemy):
         """Idle Animation"""
         temp_list = []
         for i in range(4):
-            img = pygame.image.load(f'img/enemies/demonic_samurai/Idle/{i}.png')
+            img = pygame.image.load(f'img/enemies/demonic_samurai/Idle/{i}.png').convert_alpha()
             img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             temp_list.append(img)
         self.animation_list.append(temp_list)
         """Attack Animation"""
         temp_list = []
         for i in range(8):
-            img = pygame.image.load(f'img/enemies/demonic_samurai/Attack/{i}.png')
+            img = pygame.image.load(f'img/enemies/demonic_samurai/Attack/{i}.png').convert_alpha()
             img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             temp_list.append(img)
         self.animation_list.append(temp_list)
         """Hurt Animation"""
         temp_list = []
         for i in range(4):
-            img = pygame.image.load(f'img/enemies/demonic_samurai/Hurt/{i}.png')
+            img = pygame.image.load(f'img/enemies/demonic_samurai/Hurt/{i}.png').convert_alpha()
             img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             temp_list.append(img)
         self.animation_list.append(temp_list)
         """Death Animation"""
         temp_list = []
         for i in range(4):
-            img = pygame.image.load(f'img/enemies/demonic_samurai/Dead/{i}.png')
+            img = pygame.image.load(f'img/enemies/demonic_samurai/Dead/{i}.png').convert_alpha()
             img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             temp_list.append(img)
         self.animation_list.append(temp_list)
@@ -57,7 +57,7 @@ class Demonic_Samurai(Enemy):
 
     def update(self):
         #frame goes faster the lower the cooldown goes
-        animation_cooldown = 175
+        animation_cooldown = 165
         #updates animation frames
         self.image = self.animation_list[self.action][self.frame_index]
         #checks if enough time has passed before it plays the next frame
