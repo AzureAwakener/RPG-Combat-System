@@ -2,46 +2,69 @@ class Combat_Manager():
     def __init__(self, player, enemies):
         self.player = player
         self.enemies = enemies
-        self.current_turn = player
-        self.turn_active = True
-        self.action_cooldown = 100
-        self.action_wait = 0
+        self.current_turn = player  # Player starts first
+        self.action_cooldown = 100 # Frame time before an action can be taken
+        self.action_wait = 0 # Counter for action cooldown
 
-    def player_phase(self):
-        if self.current_turn == self.player:
-            if self.player.is_alive == True:
-                if self.turn_active == True:
-                    self.player.defense = 20
-                    self.action_wait += 1
+    def update_player_phase(self):
+        """Update the player's phase of combat."""
+        # Resets player's base defense at the start of their turn
+        if self.action_wait == 0 and self.player.defense != 20:
+            self.player.defense = 20
+
+        self.action_wait += 1
     
+    def player_action_ready(self):
+        """Check if the player can take an action."""
+        return self.action_wait >= self.action_cooldown
+
     def player_attack(self):
-        if self.action_wait > self.action_cooldown:
+        """Handle the player's attack action."""
+        if self.player_action_ready():
             self.player.attack(self.enemies)
-            self.turn_active = False
-            self.action_wait = 0
+            self._end_turn()
+            return True # Action was successful
+        return False # Action not ready
     
     def player_guard(self):
-        if self.action_wait > self.action_cooldown:
-            self.player.defense *= 0.7
-            self.turn_active = False
-            self.action_wait = 0
+        """Handle the player's guard action."""
+        # Increases player's defense for the turn
+        if self.player_action_ready():
+            self.player.defense *= 1.5
+            self._end_turn()
+            return True # Action was successful
+        return False # Action not ready
     
     def player_pass(self):
-        if self.action_wait > self.action_cooldown:
-            self.turn_active = False
-            self.action_wait = 0
+        """Handle the player's pass action."""
+        # Player can pass their turn without taking an action
+        if self.player_action_ready():
+            self._end_turn()
+            return True # Action was successful
+        return False # Action not ready
     
-    def enemy_phase(self):
-        if self.turn_active == False:
-            if self.enemies.is_alive == True:
-                if self.turn_active == False:
-                    self.action_wait += 1
-                    if self.action_wait > self.action_cooldown:
-                        self.enemies.attack(self.player)
-                        self.turn_active = True
-                        self.action_wait = 0
+    def update_enemy_phase(self):
+        """Update the enemy's phase of combat."""
+        self.action_wait += 1
+        if self.action_wait >= self.action_cooldown:
+            if self.enemies.is_alive:
+                self.enemies.attack(self.player)
+            self._end_turn()
+            return True # Enemies attacked successfully
+        return False # Enemies not ready to attack
 
+    def _end_turn(self):
+        """Switcthes the turn to the other combatant."""
+        if self.current_turn == self.player:
+            self.current_turn = self.enemies
+        else:
+            self.current_turn = self.player
+        self.action_wait = 0 # Reset action wait for the next turn
     
-    def draw(self):
-        self.player_phase()
-        self.enemy_ai()
+    def is_player_turn(self):
+        """Check if it's the player's turn."""
+        return self.current_turn == self.player
+    
+    def is_enemy_turn(self):
+        """Check if it's the enemy's turn."""
+        return self.current_turn == self.enemies

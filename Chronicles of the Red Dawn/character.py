@@ -1,5 +1,4 @@
 import pygame
-import settings
 
 class Character():
     def __init__(self, name, hp, strength, defense):
@@ -12,7 +11,7 @@ class Character():
         self.is_alive = True
 
 class Fighter(Character):
-    def __init__(self, x, y, name):
+    def __init__(self, x, y, name, character_scale, animation_cooldown):
         super().__init__(name, hp = 100, strength = 60, defense = 20)
         #-------------------------------------
         #               Animations
@@ -21,7 +20,8 @@ class Fighter(Character):
         self.animation_list = []
         self.frame_index = 0
         self.action = 0 # 0 - idle, 1 - attack, 2 - hurt, 3 - dead, 4 - dying
-        self.character_scale = settings.Settings().character_scale
+        self.character_scale = character_scale
+        self.animation_cooldown = animation_cooldown # frame goes faster the lower the cooldown goes
         self.update_time = pygame.time.get_ticks()
         """Idle Animation"""
         temp_list = []
@@ -77,12 +77,10 @@ class Fighter(Character):
         self.screen = pygame.display.get_surface()
 
     def update(self):
-        #frame goes faster the lower the cooldown goes
-        animation_cooldown = settings.Settings().fighter_cooldown
         #updates animation frames
         self.image = self.animation_list[self.action][self.frame_index]
         #checks if enough time has passed before it plays the next frame
-        if pygame.time.get_ticks() - self.update_time > animation_cooldown:
+        if pygame.time.get_ticks() - self.update_time > self.animation_cooldown:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
         #resets the animtion if there's no next image

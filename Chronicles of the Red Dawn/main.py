@@ -13,18 +13,14 @@ class Game():
         pygame.init()
         self.clock = pygame.time.Clock()
         self.settings = Settings()
-        self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height), pygame.FULLSCREEN)
+
+        """initialize the game window"""
+        self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         pygame.display.set_caption("Chronicles of the Red Dawn")
 
-        """characters"""
-        self.fighter = Fighter(300, 555, 'Bravehart')
-        self.demon_1 = Demonic_Samurai(950, 555, 'Demon')
+        """Game States"""
+        self.game_state = 'main_menu' # Possible states: main_menu, battle, credits, game_over, victory, exit
 
-        """health bars"""
-        self.fighter_health_bar = HealthBar(150, 60, self.fighter.hp, self.fighter.max_hp)
-        self.demon_1_health_bar = HealthBar(875, self.demon_1.rect.y, self.demon_1.hp, self.demon_1.max_hp, width= 150, height=8)
-
-        self.combat = Combat_Manager(self.fighter, self.demon_1)
         self.action_taken = False
 
         """buttons"""
@@ -34,82 +30,130 @@ class Game():
         self.return_btn = Button(625, 330, asset.return_img, 1)
         self.return_title = Button(10, 650, asset.return_img, 1)
 
+        # Battle state components are initially set to None
+        # they will be set up by the `inititialize_battle` method
+        self.fighter = None
+        self.demon_1 = None
+        self.fighter_health_bar = None
+        self.demon_1_health_bar = None
+        self.combat = None
+
+    
+    def _inititialize_battle(self):
+        """Initializes or resets the battle state for a new game or after a defeat."""
+
+        """characters"""
+        self.fighter = Fighter(300, 555, 'Bravehart', self.settings.character_scale, self.settings.fighter_cooldown)
+        self.demon_1 = Demonic_Samurai(950, 555, 'Demon', self.settings.character_scale, self.settings.demon_cooldown)
+
+        """health bars"""
+        self.fighter_health_bar = HealthBar(150, 60, self.fighter.hp, self.fighter.max_hp, self.settings.red, self.settings.green)
+        self.demon_1_health_bar = HealthBar(875, self.demon_1.rect.y, self.demon_1.hp, self.demon_1.max_hp, self.settings.red, self.settings.green, width= 150, height=8)
+
+        # pass the fighter and enemy instances to the combat manager
+        self.combat = Combat_Manager(self.fighter, self.demon_1)
+
+
     def run_game(self):
+        """Main game loop that runs and updates the game state."""
         while True:
-            self._check_events()
-            self._battle_screen()
-            self.clock.tick(60)           
+            self._check_events() # check for user input
 
-            #turn logic
-            if self.action_taken == False:
-                self.combat.player_phase()
-                self.action_taken = True
-            if self.action_taken == True:
-                self.combat.enemy_phase()
-                self.action_taken = False
+            if self.game_state == 'main_menu':
+                self._main_menu()
+            elif self.game_state == 'battle':
+                self._battle_screen()
+                self._update_battle_logic()
+                if not self.fighter.is_alive: # if the fighter is dead, change game state to game_over
+                    self.game_state = 'game_over'
+            elif self.game_state == 'credits':
+                self._credit_screen()
+            elif self.game_state == 'game_over':
+                self._game_over_screen()
+            elif self.game_state == 'victory':
+                pass
+            elif self.game_state == 'exit':
+                sys.exit()
+            
+            pygame.display.flip()
+            self.clock.tick(60) # Caps frame rate to 60 FPS
 
+    def _main_menu(self):
+        """Main menu screen with buttons to start the game, view credits, or exit."""
+        self.draw_title_screen() # Draws the title screen background
+
+        # Check for button clicks
+        if self.start_btn.draw(self.screen):
+            self._inititialize_battle()
+            self.game_state = 'battle' # Change game state to battle
+        elif self.exit_btn.draw(self.screen):
+            self.game_state = 'exit' # Change game state to exit
+        elif self.credit_btn.draw(self.screen):
+            self.game_state = 'credits' # Change game state to credits
+
+    def _credit_screen(self):
+        """Credits screen displaying the names of contributors and assets used."""
+        # Draws the credits screen background and text
+        self.screen.fill((0, 0, 0))
+        self.draw_text('Credits', self.settings.white, 600, 100) # title
+        self.draw_text(
+        'Dream Mix \n'
+        'Prinbles \n'
+        'JDSherbert, AnthonyTTurtlez \n'
+        'saukgp \n'
+        'russ123 \n'
+        'tak_mfk \n'
+        'Tiny Worlds \n'
+        'Mounir Tohami \n'
+        'vibrato08', self.settings.white, 500, 150
+        ) # Owners of some of the assets I used
+        
+        if self.return_title.draw(self.screen): # returns to main menu when clicked
+            self.game_state = 'main_menu'
+    
     def _battle_screen(self):
-        """combat interface"""
+        """Renders the battle screen with the player and enemy characters, health bars, and combat interface."""
+
+        # Draws all static elements of the battle screen
         self.draw_bg()
         self.draw_frame()
         self.draw_portrait()
         self.draw_keys()
         self.draw_text('Attack', self.settings.white, 150, 685)
         self.draw_text('End Turn', self.settings.white, 350, 685)
-        """character"""
+
+        # Draws the player and enemy characters, their health bars, and relevant text
+        # Player character
         self.fighter.draw()
         self.fighter.update()
         self.draw_text(f'HP: {self.fighter.hp}', self.settings.white, 150, 35)
         self.draw_text(f'{self.fighter.name}', self.settings.white, 45, 115)
         self.fighter_health_bar.draw(self.fighter.hp)
-        """enemies"""
+        # Enemy character
         self.demon_1.draw()
         self.demon_1.update()
         self.draw_text(f'{self.demon_1.name}', self.settings.red, self.demon_1_health_bar.x, 410)
         self.demon_1_health_bar.draw(self.demon_1.hp)
-        
-        #checks for game over
-        if self.fighter.is_alive == False:
-            self.screen.blit(asset.defeat_img, (460, 150))
-            # draws the return button to main menu
-            self.draw_text('return to main menu', self.settings.white, 540, 300)
-            if self.return_btn.draw(self.screen):
-                self.main_menu()
 
-        pygame.display.flip()
+    def _game_over_screen(self):
+        """Displays the game over screen with an option to return to the main menu."""
+        self.draw_bg() # Keeps the background consistent with the battle screen
+        self.screen.blit(asset.defeat_img, (460, 150)) # Draws the game over image
+        self.draw_text('return to main menu', self.settings.white, 540, 300)
 
-    def main_menu(self):
-        while True:
-            self.draw_title_screen()
-            if self.start_btn.draw(self.screen):
-                self.run_game()
-            elif self.exit_btn.draw(self.screen):
-                sys.exit()
-            elif self.credit_btn.draw(self.screen):
-                self.credit_screen()
+        # Check if the return button is clicked to go back to the main menu
+        if self.return_btn.draw(self.screen):
+            self._main_menu()
+    
+    def _update_battle_logic(self):
+        """Handles turn based progression in the battle."""
+        if self.combat:
+            if self.combat.is_player_turn():
+                self.combat.update_player_phase() # Allows the player's turn to take actions when ready
+            elif self.combat.is_enemy_turn():
+                self.combat.update_enemy_phase() # Allows the enemy's turn to take actions when ready
 
-            self._check_events()
-            pygame.display.flip()
-
-    def credit_screen(self):
-        while True:
-            self.screen.fill((0, 0, 0))
-            self.draw_text('Credits', self.settings.white, 600, 100) # title
-            self.draw_text(
-            'Dream Mix \n'
-            'Prinbles \n'
-            'JDSherbert, AnthonyTTurtlez \n'
-            'saukgp \n'
-            'russ123 \n'
-            'tak_mfk \n'
-            'Tiny Worlds \n'
-            'Mounir Tohami \n'
-            'vibrato08', self.settings.white, 500, 150) # Owners of some of the assets I used
-            if self.return_title.draw(self.screen): # returns to main menu when clicked
-                self.main_menu()
-            self._check_events()
-            pygame.display.flip()
-
+    # --- Methods for drawing static UI elements on the screen ---
     def draw_bg(self):
         self.screen.blit(asset.battle_bg, (0, 0))
     
@@ -131,28 +175,36 @@ class Game():
         self.screen.blit(img, (x, y))
 
     def _check_events(self):
+        """Processes all events in the game loop."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                sys.exit()
+                self.game_state = 'exit'  # Exit the game
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
     
     def _check_keydown_events(self, event):
+        """Handles keydown events for the game."""
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_TAB:
                 pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
             elif event.key == pygame.K_ESCAPE:
-                self.main_menu()
-            elif event.key == pygame.K_a:
-                self.combat.player_attack()
-                print("attack!")
-            elif event.key == pygame.K_s:
-                self.combat.player_pass()
-                print("pass turn!")
-            elif event.key == pygame.K_d:
-                self.combat.player_guard()
-                print("increased defense!")       
+                # Allows the user to return to main menu from any game state
+                if self.game_state in ['battle', 'credits', 'game_over']:
+                    self.game_state = 'main_menu' 
+            elif self.game_state == 'battle': # Check for key presses only in battle state
+                if self.combat and self.combat.is_player_turn():
+                    # Check for player actions based on key presses
+                    # Player can attack, pass turn, or guard
+                    if event.key == pygame.K_a:
+                        self.combat.player_attack()
+                        print("attack!")
+                    elif event.key == pygame.K_s:
+                        self.combat.player_pass()
+                        print("pass turn!")
+                    elif event.key == pygame.K_d:
+                        self.combat.player_guard()
+                        print("increased defense!")       
 
 if __name__ == '__main__':
     CRD_game = Game()
-    CRD_game.main_menu()
+    CRD_game.run_game()

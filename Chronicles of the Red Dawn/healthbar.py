@@ -1,7 +1,7 @@
 import pygame
 
 class HealthBar():
-    def __init__(self, x, y, hp, max_hp, width=200, height=20):
+    def __init__(self, x, y, hp, max_hp, bottom_color, top_color, width=200, height=20):
         self.x = x
         self.y = y
         self.hp = hp
@@ -10,8 +10,8 @@ class HealthBar():
         self.height = height    # default height
         self.screen = pygame.display.get_surface()
         #define colors
-        self.red = (220, 20, 60)
-        self.green = (139, 190, 27)
+        self.red = bottom_color # color for the bottom layer (damage taken)
+        self.green = top_color # color for the top layer (current health)
 
     def draw(self, hp):
         #current health
