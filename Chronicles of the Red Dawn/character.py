@@ -24,7 +24,7 @@ class Fighter(Character):
         """Idle Animation"""
         temp_list = []
         for i in range(4):
-            img = pygame.image.load(f'img/battlers/Brand/Idle/{i}.png').convert_alpha()
+            img = pygame.image.load(f'Chronicles of the Red Dawn/img/battlers/Brand/Idle/{i}.png').convert_alpha()
             img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             img = pygame.transform.flip(img, flip_x= 180, flip_y= 0)
             temp_list.append(img)
@@ -32,7 +32,7 @@ class Fighter(Character):
         """Attack Animation"""
         temp_list = []
         for i in range(4):
-            img = pygame.image.load(f'img/battlers/Brand/Attack/{i}.png').convert_alpha()
+            img = pygame.image.load(f'Chronicles of the Red Dawn/img/battlers/Brand/Attack/{i}.png').convert_alpha()
             img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             img = pygame.transform.flip(img, flip_x= 180, flip_y= 0)
             temp_list.append(img)
@@ -40,7 +40,7 @@ class Fighter(Character):
         """Hurt Animation"""
         temp_list = []
         for i in range(4):
-            img = pygame.image.load(f'img/battlers/Brand/Hurt/{i}.png').convert_alpha()
+            img = pygame.image.load(f'Chronicles of the Red Dawn/img/battlers/Brand/Hurt/{i}.png').convert_alpha()
             img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             img = pygame.transform.flip(img, flip_x= 180, flip_y= 0)
             temp_list.append(img)
@@ -48,7 +48,7 @@ class Fighter(Character):
         """Death Animation"""
         temp_list = []
         for i in range(4):
-            img = pygame.image.load(f'img/battlers/Brand/Dead/{i}.png').convert_alpha()
+            img = pygame.image.load(f'Chronicles of the Red Dawn/img/battlers/Brand/Dead/{i}.png').convert_alpha()
             img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             img = pygame.transform.flip(img, flip_x= 180, flip_y= 0)
             temp_list.append(img)
@@ -56,7 +56,7 @@ class Fighter(Character):
         """Low HP Animation"""
         temp_list = []
         for i in range(4):
-            img = pygame.image.load(f'img/battlers/Brand/Dying/{i}.png').convert_alpha()
+            img = pygame.image.load(f'Chronicles of the Red Dawn/img/battlers/Brand/Dying/{i}.png').convert_alpha()
             img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             img = pygame.transform.flip(img, flip_x= 180, flip_y= 0)
             temp_list.append(img)
