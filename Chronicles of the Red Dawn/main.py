@@ -137,13 +137,13 @@ class Game():
 
     def _game_over_screen(self):
         """Displays the game over screen with an option to return to the main menu."""
-        self.draw_bg() # Keeps the background consistent with the battle screen
+        self.screen.fill((0, 0, 0)) # Fills the screen with black
         self.screen.blit(asset.defeat_img, (460, 150)) # Draws the game over image
         self.draw_text('return to main menu', self.settings.white, 540, 300)
 
         # Check if the return button is clicked to go back to the main menu
         if self.return_btn.draw(self.screen):
-            self._main_menu()
+            self.game_state = 'main_menu'
     
     def _update_battle_logic(self):
         """Handles turn based progression in the battle."""
