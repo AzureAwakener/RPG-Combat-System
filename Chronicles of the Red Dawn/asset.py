@@ -13,14 +13,14 @@ white = (240,255,255)
 #-------------------------------------
 """Background"""
 title_img = pygame.image.load('img\Title_Screen.png').convert_alpha()
-battle_bg = pygame.image.load('img/battle_bg/dawn.png').convert_alpha()
+battle_bg = pygame.image.load('Chronicles of the Red Dawn/img/battle_bg/dawn.png').convert_alpha()
 battle_bg = pygame.transform.scale(battle_bg, 
                                    (battle_bg.get_width() * 0.7, battle_bg.get_height() * 0.68))
 """Battle UI"""
-icon_frame = pygame.image.load('img/battle_interface/icon border.png').convert_alpha()
+icon_frame = pygame.image.load('Chronicles of the Red Dawn/img/battle_interface/icon border.png').convert_alpha()
 icon_frame = pygame.transform.scale(icon_frame, 
                                     (icon_frame.get_width() * 2, icon_frame.get_height() * 2))
-actor1_icon = pygame.image.load('img/battle_interface/brand_icon.png').convert_alpha()
+actor1_icon = pygame.image.load('Chronicles of the Red Dawn/img/battle_interface/brand_icon.png').convert_alpha()
 actor1_icon = pygame.transform.scale(actor1_icon, 
                                     (actor1_icon.get_width() * 1.5, actor1_icon.get_height() * 1.5))
 key_a_icon = pygame.image.load('img/battle_interface/key_a_icon.png').convert_alpha()
