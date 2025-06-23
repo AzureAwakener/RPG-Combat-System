@@ -1,4 +1,5 @@
 import pygame
+import settings
 
 class Enemy():
     def __init__(self, name, hp, strength, defense):
@@ -21,33 +22,34 @@ class Demonic_Samurai(Enemy):
         self.animation_list = []
         self.frame_index = 0
         self.action = 0 # 0 - idle, 1 - attack, 2 - hurt, 3 - dead
+        self.character_scale = settings.Settings().character_scale
         self.update_time = pygame.time.get_ticks()
         """Idle Animation"""
         temp_list = []
         for i in range(4):
             img = pygame.image.load(f'Chronicles of the Red Dawn/img/enemies/demonic_samurai/Idle/{i}.png').convert_alpha()
-            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
+            img = pygame.transform.scale(img, (img.get_width() * self.character_scale, img.get_height() * self.character_scale))
             temp_list.append(img)
         self.animation_list.append(temp_list)
         """Attack Animation"""
         temp_list = []
         for i in range(8):
             img = pygame.image.load(f'Chronicles of the Red Dawn/img/enemies/demonic_samurai/Attack/{i}.png').convert_alpha()
-            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
+            img = pygame.transform.scale(img, (img.get_width() * self.character_scale, img.get_height() * self.character_scale))
             temp_list.append(img)
         self.animation_list.append(temp_list)
         """Hurt Animation"""
         temp_list = []
         for i in range(4):
             img = pygame.image.load(f'Chronicles of the Red Dawn/img/enemies/demonic_samurai/Hurt/{i}.png').convert_alpha()
-            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
+            img = pygame.transform.scale(img, (img.get_width() * self.character_scale, img.get_height() * self.character_scale))
             temp_list.append(img)
         self.animation_list.append(temp_list)
         """Death Animation"""
         temp_list = []
         for i in range(4):
             img = pygame.image.load(f'Chronicles of the Red Dawn/img/enemies/demonic_samurai/Dead/{i}.png').convert_alpha()
-            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
+            img = pygame.transform.scale(img, (img.get_width() * self.character_scale, img.get_height() * self.character_scale))
             temp_list.append(img)
         self.animation_list.append(temp_list)
         self.image = self.animation_list[self.action][self.frame_index]
@@ -57,7 +59,7 @@ class Demonic_Samurai(Enemy):
 
     def update(self):
         #frame goes faster the lower the cooldown goes
-        animation_cooldown = 165
+        animation_cooldown = settings.Settings().demon_cooldown
         #updates animation frames
         self.image = self.animation_list[self.action][self.frame_index]
         #checks if enough time has passed before it plays the next frame

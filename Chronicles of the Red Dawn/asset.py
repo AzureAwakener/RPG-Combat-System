@@ -4,10 +4,6 @@ import settings
 setting = settings.Settings()
 pygame.display.init()
 display = pygame.display.set_mode((setting.screen_width, setting.screen_height))
-"""colors"""
-red = (220, 20, 60)
-green = (139, 190, 27)
-white = (240,255,255)
 #-------------------------------------
 #           Image Database
 #-------------------------------------

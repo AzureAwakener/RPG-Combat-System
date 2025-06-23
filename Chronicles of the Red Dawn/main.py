@@ -48,6 +48,36 @@ class Game():
                 self.combat.enemy_phase()
                 self.action_taken = False
 
+    def _battle_screen(self):
+        """combat interface"""
+        self.draw_bg()
+        self.draw_frame()
+        self.draw_portrait()
+        self.draw_keys()
+        self.draw_text('Attack', self.settings.white, 150, 685)
+        self.draw_text('End Turn', self.settings.white, 350, 685)
+        """character"""
+        self.fighter.draw()
+        self.fighter.update()
+        self.draw_text(f'HP: {self.fighter.hp}', self.settings.white, 150, 35)
+        self.draw_text(f'{self.fighter.name}', self.settings.white, 45, 115)
+        self.fighter_health_bar.draw(self.fighter.hp)
+        """enemies"""
+        self.demon_1.draw()
+        self.demon_1.update()
+        self.draw_text(f'{self.demon_1.name}', self.settings.red, self.demon_1_health_bar.x, 410)
+        self.demon_1_health_bar.draw(self.demon_1.hp)
+        
+        #checks for game over
+        if self.fighter.is_alive == False:
+            self.screen.blit(asset.defeat_img, (460, 150))
+            # draws the return button to main menu
+            self.draw_text('return to main menu', self.settings.white, 540, 300)
+            if self.return_btn.draw(self.screen):
+                self.main_menu()
+
+        pygame.display.flip()
+
     def main_menu(self):
         while True:
             self.draw_title_screen()
@@ -64,7 +94,7 @@ class Game():
     def credit_screen(self):
         while True:
             self.screen.fill((0, 0, 0))
-            self.draw_text('Credits', asset.white, 600, 100) # title
+            self.draw_text('Credits', self.settings.white, 600, 100) # title
             self.draw_text(
             'Dream Mix \n'
             'Prinbles \n'
@@ -74,7 +104,7 @@ class Game():
             'tak_mfk \n'
             'Tiny Worlds \n'
             'Mounir Tohami \n'
-            'vibrato08', asset.white, 500, 150) # Owners of some of the assets I used
+            'vibrato08', self.settings.white, 500, 150) # Owners of some of the assets I used
             if self.return_title.draw(self.screen): # returns to main menu when clicked
                 self.main_menu()
             self._check_events()
@@ -121,37 +151,7 @@ class Game():
                 print("pass turn!")
             elif event.key == pygame.K_d:
                 self.combat.player_guard()
-                print("increased defense!")
-
-    def _battle_screen(self):
-        """combat interface"""
-        self.draw_bg()
-        self.draw_frame()
-        self.draw_portrait()
-        self.draw_keys()
-        self.draw_text('Attack', asset.white, 150, 685)
-        self.draw_text('End Turn', asset.white, 350, 685)
-        """character"""
-        self.fighter.draw()
-        self.fighter.update()
-        self.draw_text(f'HP: {self.fighter.hp}', asset.white, 150, 35)
-        self.draw_text(f'{self.fighter.name}', asset.white, 45, 115)
-        self.fighter_health_bar.draw(self.fighter.hp)
-        """enemies"""
-        self.demon_1.draw()
-        self.demon_1.update()
-        self.draw_text(f'{self.demon_1.name}', asset.red, self.demon_1_health_bar.x, 410)
-        self.demon_1_health_bar.draw(self.demon_1.hp)
-        
-        #checks for game over
-        if self.fighter.is_alive == False:
-            self.screen.blit(asset.defeat_img, (460, 150))
-            """buttons"""
-            self.draw_text('return to main menu', asset.white, 540, 300)
-            if self.return_btn.draw(self.screen):
-                self.main_menu()
-
-        pygame.display.flip()       
+                print("increased defense!")       
 
 if __name__ == '__main__':
     CRD_game = Game()

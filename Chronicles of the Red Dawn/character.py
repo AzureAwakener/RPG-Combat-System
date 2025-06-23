@@ -1,4 +1,5 @@
 import pygame
+import settings
 
 class Character():
     def __init__(self, name, hp, strength, defense):
@@ -20,53 +21,54 @@ class Fighter(Character):
         self.animation_list = []
         self.frame_index = 0
         self.action = 0 # 0 - idle, 1 - attack, 2 - hurt, 3 - dead, 4 - dying
+        self.character_scale = settings.Settings().character_scale
         self.update_time = pygame.time.get_ticks()
         """Idle Animation"""
         temp_list = []
         for i in range(4):
             img = pygame.image.load(f'Chronicles of the Red Dawn/img/battlers/Brand/Idle/{i}.png').convert_alpha()
-            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             img = pygame.transform.flip(img, flip_x= 180, flip_y= 0)
+            img = pygame.transform.scale(img, (img.get_width() * self.character_scale, img.get_height() * self.character_scale))
             temp_list.append(img)
         self.animation_list.append(temp_list)
         """Attack Animation"""
         temp_list = []
         for i in range(4):
             img = pygame.image.load(f'Chronicles of the Red Dawn/img/battlers/Brand/Attack/{i}.png').convert_alpha()
-            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             img = pygame.transform.flip(img, flip_x= 180, flip_y= 0)
+            img = pygame.transform.scale(img, (img.get_width() * self.character_scale, img.get_height() * self.character_scale))
             temp_list.append(img)
         self.animation_list.append(temp_list)
         """Hurt Animation"""
         temp_list = []
         for i in range(4):
             img = pygame.image.load(f'Chronicles of the Red Dawn/img/battlers/Brand/Hurt/{i}.png').convert_alpha()
-            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             img = pygame.transform.flip(img, flip_x= 180, flip_y= 0)
+            img = pygame.transform.scale(img, (img.get_width() * self.character_scale, img.get_height() * self.character_scale))
             temp_list.append(img)
         self.animation_list.append(temp_list)
         """Death Animation"""
         temp_list = []
         for i in range(4):
             img = pygame.image.load(f'Chronicles of the Red Dawn/img/battlers/Brand/Dead/{i}.png').convert_alpha()
-            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             img = pygame.transform.flip(img, flip_x= 180, flip_y= 0)
+            img = pygame.transform.scale(img, (img.get_width() * self.character_scale, img.get_height() * self.character_scale))
             temp_list.append(img)
         self.animation_list.append(temp_list)
         """Low HP Animation"""
         temp_list = []
         for i in range(4):
             img = pygame.image.load(f'Chronicles of the Red Dawn/img/battlers/Brand/Dying/{i}.png').convert_alpha()
-            img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
             img = pygame.transform.flip(img, flip_x= 180, flip_y= 0)
+            img = pygame.transform.scale(img, (img.get_width() * self.character_scale, img.get_height() * self.character_scale))
             temp_list.append(img)
         self.animation_list.append(temp_list)
         #"""Victory Animation"""
         #temp_list = []
         #for i in range(4):
         #    img = pygame.image.load(f'img/battlers/Brand/Victory/{i}.png').convert_alpha()
-        #    img = pygame.transform.scale(img, (img.get_width() * 2.5, img.get_height() * 2.5))
         #    img = pygame.transform.flip(img, flip_x= 180, flip_y= 0)
+        #    img = pygame.transform.scale(img, (img.get_width() * self.character_scale, img.get_height() * self.character_scale))
         #    temp_list.append(img)
         #self.animation_list.append(temp_list)
         self.image = self.animation_list[self.action][self.frame_index]
@@ -76,7 +78,7 @@ class Fighter(Character):
 
     def update(self):
         #frame goes faster the lower the cooldown goes
-        animation_cooldown = 150
+        animation_cooldown = settings.Settings().fighter_cooldown
         #updates animation frames
         self.image = self.animation_list[self.action][self.frame_index]
         #checks if enough time has passed before it plays the next frame
