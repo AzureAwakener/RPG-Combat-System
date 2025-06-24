@@ -8,6 +8,7 @@ from healthbar import HealthBar
 from combat_manager import Combat_Manager
 from button import Button
 from dialogue import Dialogue
+from damage_text import DamageText
 
 class Game():
     def __init__(self):
@@ -40,6 +41,9 @@ class Game():
         self.combat = None
         self.dialogue = None
         self.show_dialogue = False
+
+        # damage text
+        self.damage_texts = []  # List to hold active damage texts
 
     
     def _inititialize_battle(self):
@@ -148,10 +152,38 @@ class Game():
         if self.show_dialogue and self.dialogue:
             self.dialogue.draw_dialogue(self.screen, self.dialogue_text[self.dialogue_index])
 
+        # Draws the damage texts above the enemy
+        for dmg_text in self.damage_texts:
+            if dmg_text.is_alive():
+                dmg_text.draw(self.screen)
+        # Remove damage texts that have expired
+        self.damage_texts = [dt for dt in self.damage_texts if dt.is_alive()]
+
     def _game_over_screen(self):
         """Displays the game over screen with an option to return to the main menu."""
-        self.screen.fill((0, 0, 0)) # Fills the screen with black
-        self.screen.blit(asset.defeat_img, (460, 150)) # Draws the game over image
+        self.draw_bg()
+        self.draw_frame()
+        self.draw_portrait()
+        # Draw characters and their animations even if the player has lost
+    
+        self.fighter.update()
+        self.fighter.draw()
+        self.fighter_health_bar.draw(self.fighter.hp)
+        self.draw_text(f'HP: {self.fighter.hp}', self.settings.white, 150, 35)
+        self.draw_text(f'{self.fighter.name}', self.settings.white, 45, 115)
+    
+        self.demon_1.update()
+        self.demon_1.draw()
+        self.demon_1_health_bar.draw(self.demon_1.hp)
+        self.draw_text(f'{self.demon_1.name}', self.settings.red, self.demon_1_health_bar.x, 410)
+        
+        # Draws a semi-transparent overlay to dim the background when game is over
+        overlay = pygame.Surface((self.settings.screen_width, self.settings.screen_height), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))
+        self.screen.blit(overlay, (0, 0)) # Add a semi-transparent overlay
+        
+        # Draws the game over image and text
+        self.screen.blit(asset.defeat_img, (460, 150))
         self.draw_text('return to main menu', self.settings.white, 540, 300)
 
         # Check if the return button is clicked to go back to the main menu
@@ -164,7 +196,18 @@ class Game():
             if self.combat.is_player_turn():
                 self.combat.update_player_phase() # Allows the player's turn to take actions when ready
             elif self.combat.is_enemy_turn():
-                self.combat.update_enemy_phase() # Allows the enemy's turn to take actions when ready
+                damage = self.combat.update_enemy_phase() # Allows the enemy's turn to take actions when ready
+                if damage is not None:
+                    # Show damage text above the player
+                    self.damage_texts.append(
+                        DamageText(f"-{damage}",
+                                   self.fighter.rect.centerx,
+                                   self.fighter.rect.y,
+                                   self.settings.red,
+                                   self.settings.font,
+                                   self.settings.dmg_duration)
+                    )
+                    print("enemy attack!")
 
     # --- Methods for drawing static UI elements on the screen ---
     def draw_bg(self):
@@ -218,8 +261,18 @@ class Game():
                     # Check for player actions based on key presses
                     # Player can attack, pass turn, or guard
                     if event.key == pygame.K_a:
-                        self.combat.player_attack()
-                        print("attack!")
+                        damage = self.combat.player_attack()
+                        if damage is not None:
+                            # Show damage text above the enemy
+                            self.damage_texts.append(
+                                DamageText(f"-{damage}",
+                                           self.demon_1.rect.centerx,
+                                           self.demon_1.rect.y,
+                                           self.settings.red,
+                                           self.settings.font,
+                                           self.settings.dmg_duration)
+                            )
+                            print("attack!")
                     elif event.key == pygame.K_s:
                         self.combat.player_pass()
                         print("pass turn!")

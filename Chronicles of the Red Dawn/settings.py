@@ -18,3 +18,5 @@ class Settings():
         self.demon_cooldown = 165
         # animation scale
         self.character_scale = 2.5 # scale for character animations
+        # damage text settings
+        self.dmg_duration = 0.8 # seconds

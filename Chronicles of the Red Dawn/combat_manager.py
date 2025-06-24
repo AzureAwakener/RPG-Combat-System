@@ -21,10 +21,10 @@ class Combat_Manager():
     def player_attack(self):
         """Handle the player's attack action."""
         if self.player_action_ready():
-            self.player.attack(self.enemies)
+            damage = self.player.attack(self.enemies)
             self._end_turn()
-            return True # Action was successful
-        return False # Action not ready
+            return damage # Returns damage dealt
+        return None # Action not ready
     
     def player_guard(self):
         """Handle the player's guard action."""
@@ -48,10 +48,12 @@ class Combat_Manager():
         self.action_wait += 1
         if self.action_wait >= self.action_cooldown:
             if self.enemies.is_alive:
-                self.enemies.attack(self.player)
+                damage = self.enemies.attack(self.player)
+                self._end_turn()
+                return damage # Returns damage dealt
             self._end_turn()
-            return True # Enemies attacked successfully
-        return False # Enemies not ready to attack
+            return None
+        return None # Enemies not ready to attack
 
     def _end_turn(self):
         """Switcthes the turn to the other combatant."""

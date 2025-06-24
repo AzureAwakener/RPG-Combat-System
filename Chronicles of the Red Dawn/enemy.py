@@ -90,6 +90,7 @@ class Demonic_Samurai(Enemy):
         self.action = 1
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
+        return self.damage # damage dealt
 
     def hurt(self):
         self.action = 2
