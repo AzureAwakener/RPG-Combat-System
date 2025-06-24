@@ -9,8 +9,8 @@ class Combat_Manager():
     def update_player_phase(self):
         """Update the player's phase of combat."""
         # Resets player's base defense at the start of their turn
-        if self.action_wait == 0 and self.player.defense != 20:
-            self.player.defense = 20
+        if self.action_wait == 0 and self.player.defense != self.player.base_defense:
+            self.player.defense = self.player.base_defense
 
         self.action_wait += 1
     
@@ -30,10 +30,18 @@ class Combat_Manager():
         """Handle the player's guard action."""
         # Increases player's defense for the turn
         if self.player_action_ready():
-            self.player.defense *= 1.5
+            self.player.defense = round(self.player.defense * 1.5) # Increase defense by 50%
             self._end_turn()
             return True # Action was successful
-        return False # Action not ready
+        return None # Action not ready
+    
+    def player_heal(self, amount):
+        """Handle the player's heal action."""
+        if self.player_action_ready():
+            heal_amount = self.player.heal(amount)
+            self._end_turn()
+            return heal_amount
+        return None
     
     def player_pass(self):
         """Handle the player's pass action."""

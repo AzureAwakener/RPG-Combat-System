@@ -8,6 +8,7 @@ class Character():
         self.max_hp = hp #maximum hit points
         self.strength = strength
         self.defense = defense
+        self.base_defense = defense # base defense value for the character
         self.is_alive = True
 
 class Fighter(Character):
@@ -136,6 +137,14 @@ class Fighter(Character):
     #    self.action = 5
     #    self.frame_index = 0
     #    self.update_time = pygame.time.get_ticks()
+
+    def heal(self, amount):
+        """Heal the character by a certain amount."""
+        old_hp = self.hp
+        self.hp += amount
+        if self.hp > self.max_hp:
+            self.hp = self.max_hp
+        return self.hp - old_hp # amount of health healed
 
     def draw(self):
         self.screen.blit(self.image, self.rect)

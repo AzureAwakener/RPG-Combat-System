@@ -4,6 +4,9 @@ import settings
 setting = settings.Settings()
 pygame.display.init()
 display = pygame.display.set_mode((setting.screen_width, setting.screen_height))
+# --- Music ---
+battle_theme = 'Chronicles of the Red Dawn/ost/Apertio Floris.ogg'
+title_theme = 'Chronicles of the Red Dawn/ost/Stargazing Witch and the Twilight Castle_loop.ogg'
 #-------------------------------------
 #           Image Database
 #-------------------------------------

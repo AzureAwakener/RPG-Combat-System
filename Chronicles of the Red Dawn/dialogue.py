@@ -12,7 +12,7 @@ class Dialogue:
     
     def draw_dialogue(self, screen, text):
         # Draws the dialogue box
-        box_rect = pygame.Rect(100, self.screen_height - 550, self.screen_width - 200, 100) # Positioned at the top of the screen
+        box_rect = pygame.Rect(100, self.screen_height - 650, self.screen_width - 200, 100) # Positioned at the top of the screen
         dialogue_surface = pygame.Surface((box_rect.width, box_rect.height), pygame.SRCALPHA)
         dialogue_surface.fill(self.box_color)
         # Draw the text

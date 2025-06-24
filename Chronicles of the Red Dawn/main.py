@@ -42,11 +42,17 @@ class Game():
         self.dialogue = None
         self.show_dialogue = False
 
+        # --- Music loader ---
+        pygame.mixer.init()  # Initialize the mixer module
+        self.battle_theme = asset.battle_theme  # Load the battle theme music
+        self.title_theme = asset.title_theme  # Load the title theme music
+        self.current_music = None  # Variable to keep track of currently playing music
+
         # damage text
         self.damage_texts = []  # List to hold active damage texts
 
     
-    def _inititialize_battle(self):
+    def _initialize_battle(self):
         """Initializes or resets the battle state for a new game or after a defeat."""
 
         """characters"""
@@ -55,7 +61,7 @@ class Game():
 
         """health bars"""
         self.fighter_health_bar = HealthBar(150, 60, self.fighter.hp, self.fighter.max_hp, self.settings.red, self.settings.green)
-        self.demon_1_health_bar = HealthBar(875, self.demon_1.rect.y, self.demon_1.hp, self.demon_1.max_hp, self.settings.red, self.settings.green, width= 150, height=8)
+        self.demon_1_health_bar = HealthBar(self.demon_1.rect.x + 120, self.demon_1.rect.y - 20, self.demon_1.hp, self.demon_1.max_hp, self.settings.red, self.settings.green, width= 150, height=8)
 
         # pass the fighter and enemy instances to the combat manager
         self.combat = Combat_Manager(self.fighter, self.demon_1)
@@ -65,6 +71,11 @@ class Game():
                               "Prepare for battle!"]
         self.dialogue_index = 0
         self.show_dialogue = True # Show dialogue at the start of the battle
+
+        pygame.mixer.music.stop()  # Stop any currently playing music
+        pygame.mixer.music.load(self.battle_theme)  # Load the battle theme music
+        pygame.mixer.music.play(-1)
+        self.current_music = 'battle_theme'  # Set the current music to battle theme
 
 
     def run_game(self):
@@ -94,10 +105,20 @@ class Game():
     def _main_menu(self):
         """Main menu screen with buttons to start the game, view credits, or exit."""
         self.draw_title_screen() # Draws the title screen background
+        if not pygame.mixer.music.get_busy() or self.current_music != 'title_theme': # If music is not playing, play the title theme
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load(self.title_theme) # Load the title theme music
+            pygame.mixer.music.play(-1)
+            self.current_music = 'title_theme' # Update current music to title theme
+
+        # Draws a semi-transparent overlay to dim the background
+        overlay = pygame.Surface((self.settings.screen_width, self.settings.screen_height), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 25))
+        self.screen.blit(overlay, (0, 0)) # Add a semi-transparent overlay
 
         # Check for button clicks
         if self.start_btn.draw(self.screen):
-            self._inititialize_battle()
+            self._initialize_battle()
             self.game_state = 'battle' # Change game state to battle
         elif self.exit_btn.draw(self.screen):
             self.game_state = 'exit' # Change game state to exit
@@ -114,8 +135,8 @@ class Game():
         'Prinbles \n'
         'JDSherbert, AnthonyTTurtlez \n'
         'saukgp \n'
+        'Rem Chronicle \n'
         'russ123 \n'
-        'tak_mfk \n'
         'Tiny Worlds \n'
         'Mounir Tohami \n'
         'vibrato08', self.settings.white, 500, 150
@@ -126,27 +147,29 @@ class Game():
     
     def _battle_screen(self):
         """Renders the battle screen with the player and enemy characters, health bars, and combat interface."""
-
         # Draws all static elements of the battle screen
         self.draw_bg()
-        self.draw_frame()
-        self.draw_portrait()
-        self.draw_keys()
-        self.draw_text('Attack', self.settings.white, 150, 685)
-        self.draw_text('End Turn', self.settings.white, 350, 685)
+        if not self.show_dialogue:
+            # If dialogue is not being shown, draw the battle interface
+            self.draw_frame()
+            self.draw_portrait()
+            self.draw_keys()
+            self.draw_text('Attack', self.settings.white, 150, 685)
+            self.draw_text('End Turn', self.settings.white, 350, 685)
+            # Draws the player's health and name
+            self.draw_text(f'HP: {self.fighter.hp}', self.settings.white, 150, 35)
+            self.draw_text(f'{self.fighter.name}', self.settings.white, 45, 115)
+            self.fighter_health_bar.draw(self.fighter.hp)
+            # Draws the enemy's health and name
+            self.draw_text(f'{self.demon_1.name}', self.settings.red, self.demon_1_health_bar.x, self.demon_1_health_bar.y - 20)
+            self.demon_1_health_bar.draw(self.demon_1.hp)
 
-        # Draws the player and enemy characters, their health bars, and relevant text
         # Player character
         self.fighter.draw()
         self.fighter.update()
-        self.draw_text(f'HP: {self.fighter.hp}', self.settings.white, 150, 35)
-        self.draw_text(f'{self.fighter.name}', self.settings.white, 45, 115)
-        self.fighter_health_bar.draw(self.fighter.hp)
         # Enemy character
         self.demon_1.draw()
         self.demon_1.update()
-        self.draw_text(f'{self.demon_1.name}', self.settings.red, self.demon_1_health_bar.x, 410)
-        self.demon_1_health_bar.draw(self.demon_1.hp)
 
         # Draws the dialogue box if it is set to be shown
         if self.show_dialogue and self.dialogue:
@@ -165,17 +188,16 @@ class Game():
         self.draw_frame()
         self.draw_portrait()
         # Draw characters and their animations even if the player has lost
-    
         self.fighter.update()
         self.fighter.draw()
         self.fighter_health_bar.draw(self.fighter.hp)
         self.draw_text(f'HP: {self.fighter.hp}', self.settings.white, 150, 35)
         self.draw_text(f'{self.fighter.name}', self.settings.white, 45, 115)
-    
+        # Draw the enemy character and its health bar
         self.demon_1.update()
         self.demon_1.draw()
         self.demon_1_health_bar.draw(self.demon_1.hp)
-        self.draw_text(f'{self.demon_1.name}', self.settings.red, self.demon_1_health_bar.x, 410)
+        self.draw_text(f'{self.demon_1.name}', self.settings.red, self.demon_1_health_bar.x, self.demon_1_health_bar.y - 20)
         
         # Draws a semi-transparent overlay to dim the background when game is over
         overlay = pygame.Surface((self.settings.screen_width, self.settings.screen_height), pygame.SRCALPHA)
@@ -188,6 +210,7 @@ class Game():
 
         # Check if the return button is clicked to go back to the main menu
         if self.return_btn.draw(self.screen):
+            pygame.mixer.music.stop() # Stop the battle music when returning to the main menu
             self.game_state = 'main_menu'
     
     def _update_battle_logic(self):
@@ -205,7 +228,7 @@ class Game():
                                    self.fighter.rect.y,
                                    self.settings.red,
                                    self.settings.font,
-                                   self.settings.dmg_duration)
+                                   self.settings.text_duration)
                     )
                     print("enemy attack!")
 
@@ -255,6 +278,7 @@ class Game():
             elif event.key == pygame.K_ESCAPE:
                 # Allows the user to return to main menu from any game state
                 if self.game_state in ['battle', 'credits', 'game_over']:
+                    pygame.mixer.music.stop()  # Stop the battle music
                     self.game_state = 'main_menu' 
             elif self.game_state == 'battle': # Check for key presses only in battle state
                 if self.combat and self.combat.is_player_turn():
@@ -270,15 +294,37 @@ class Game():
                                            self.demon_1.rect.y,
                                            self.settings.red,
                                            self.settings.font,
-                                           self.settings.dmg_duration)
+                                           self.settings.text_duration)
                             )
                             print("attack!")
                     elif event.key == pygame.K_s:
                         self.combat.player_pass()
                         print("pass turn!")
                     elif event.key == pygame.K_d:
-                        self.combat.player_guard()
-                        print("increased defense!")       
+                        guard = self.combat.player_guard()
+                        if guard is not None:
+                            self.damage_texts.append(
+                                DamageText("Increased Defense!",
+                                           self.fighter.rect.centerx - 100,
+                                           self.fighter.rect.y,
+                                           self.settings.white,
+                                           self.settings.font,
+                                           self.settings.text_duration)
+                            )
+                        print("increased defense!")  
+                    elif event.key == pygame.K_f:
+                        healed = self.combat.player_heal(self.settings.heal_amount)     
+                        if healed is not None:
+                            # Show healing text above the player
+                            self.damage_texts.append(
+                                DamageText(f"+{healed}",
+                                           self.fighter.rect.centerx,
+                                           self.fighter.rect.y,
+                                           self.settings.green,
+                                           self.settings.font,
+                                           self.settings.text_duration)
+                            )
+                            print("healed!")
 
 if __name__ == '__main__':
     CRD_game = Game()

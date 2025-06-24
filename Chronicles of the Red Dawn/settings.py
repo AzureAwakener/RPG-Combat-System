@@ -19,4 +19,6 @@ class Settings():
         # animation scale
         self.character_scale = 2.5 # scale for character animations
         # damage text settings
-        self.dmg_duration = 0.8 # seconds
+        self.text_duration = 0.8 # seconds
+        # healing settings
+        self.heal_amount = 20 # amount of health restored
