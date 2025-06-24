@@ -7,6 +7,7 @@ from enemy import Demonic_Samurai
 from healthbar import HealthBar
 from combat_manager import Combat_Manager
 from button import Button
+from dialogue import Dialogue
 
 class Game():
     def __init__(self):
@@ -37,6 +38,8 @@ class Game():
         self.fighter_health_bar = None
         self.demon_1_health_bar = None
         self.combat = None
+        self.dialogue = None
+        self.show_dialogue = False
 
     
     def _inititialize_battle(self):
@@ -52,6 +55,12 @@ class Game():
 
         # pass the fighter and enemy instances to the combat manager
         self.combat = Combat_Manager(self.fighter, self.demon_1)
+        # Initialize the dialogue system
+        self.dialogue = Dialogue(self.settings.screen_width, self.settings.screen_height, self.settings.white, self.settings.font)
+        self.dialogue_text = ["A demon has appeared!",
+                              "Prepare for battle!"]
+        self.dialogue_index = 0
+        self.show_dialogue = True # Show dialogue at the start of the battle
 
 
     def run_game(self):
@@ -135,6 +144,10 @@ class Game():
         self.draw_text(f'{self.demon_1.name}', self.settings.red, self.demon_1_health_bar.x, 410)
         self.demon_1_health_bar.draw(self.demon_1.hp)
 
+        # Draws the dialogue box if it is set to be shown
+        if self.show_dialogue and self.dialogue:
+            self.dialogue.draw_dialogue(self.screen, self.dialogue_text[self.dialogue_index])
+
     def _game_over_screen(self):
         """Displays the game over screen with an option to return to the main menu."""
         self.screen.fill((0, 0, 0)) # Fills the screen with black
@@ -184,6 +197,15 @@ class Game():
     
     def _check_keydown_events(self, event):
         """Handles keydown events for the game."""
+        # --- Dialogue input handling ---
+        if self.show_dialogue and self.dialogue:
+            if event.key in [pygame.K_RETURN, pygame.K_SPACE]: # If the user presses Enter or Space
+                # If the dialogue is being shown, advance to the next line or hide it
+                self.dialogue_index += 1
+                if self.dialogue_index >= len(self.dialogue_text):
+                    self.show_dialogue = False
+            return # Prevent other key events from being processed when dialogue is active
+        
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_TAB:
                 pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
