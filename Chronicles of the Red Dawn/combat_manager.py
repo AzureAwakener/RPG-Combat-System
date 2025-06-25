@@ -31,7 +31,7 @@ class Combat_Manager():
         """Handle the player's guard action."""
         # Increases player's defense for the turn
         if self.player_action_ready():
-            self.player.defense = round(self.player.defense * 1.5) # Increase defense by 50%
+            self.player.guard() # Increase defense by 50%
             self._end_turn()
             return True # Action was successful
         return None # Action not ready

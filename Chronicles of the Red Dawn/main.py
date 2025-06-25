@@ -23,8 +23,6 @@ class Game():
         """Game States"""
         self.game_state = 'main_menu' # Possible states: main_menu, battle, credits, game_over, victory, exit
 
-        self.action_taken = False
-
         """buttons"""
         self.start_btn = Button(675, 300, asset.play_img, 1)
         self.exit_btn = Button(675, 400, asset.exit_img, 1)
@@ -50,6 +48,10 @@ class Game():
 
         # damage text
         self.damage_texts = []  # List to hold active damage texts
+        # action display
+        self.action_display_text = ""
+        self.action_display_time = 0  # seconds for which the action display text is shown
+        self.action_display_start = 0  # pygame.time.get_ticks() when the action display starts
 
     
     def _initialize_battle(self):
@@ -182,6 +184,25 @@ class Game():
         # Remove damage texts that have expired
         self.damage_texts = [dt for dt in self.damage_texts if dt.is_alive()]
 
+        # Draws the action display text if it is set to be shown
+        if self.action_display_text and pygame.time.get_ticks() - self.action_display_start < self.action_display_time:
+            text_img = self.settings.font.render(self.action_display_text, True, self.settings.white)
+            text_rect = text_img.get_rect(center=(self.settings.screen_width // 2, 200))
+
+            # Draws a semi-transparent overlay behind the action display text
+            padding = 30
+            # Calculate the size of the overlay based on the text size
+            overlay_width, overlay_height = self.settings.screen_width + padding, text_rect.height + padding // 2
+            # center the overlay on the text
+            overlay_x, overlay_y = text_rect.centerx - overlay_width // 2, text_rect.centery - overlay_height // 2
+
+            overlay_surface = pygame.Surface((overlay_width, overlay_height), pygame.SRCALPHA)
+            overlay_surface.fill((0, 0, 0, 150))
+
+            # blit the overlay surface
+            self.screen.blit(overlay_surface, (overlay_x, overlay_y))
+            self.screen.blit(text_img, text_rect)
+
     def _game_over_screen(self):
         """Displays the game over screen with an option to return to the main menu."""
         self.draw_bg()
@@ -296,9 +317,16 @@ class Game():
                                            self.settings.font,
                                            self.settings.text_duration)
                             )
+                            # set action display text
+                            self.action_display_text = "Slash!"
+                            self.action_display_time = 1000 # Show action display for 1 second
+                            self.action_display_start = pygame.time.get_ticks()  # Start the action display timer
                             print("attack!")
                     elif event.key == pygame.K_s:
                         self.combat.player_pass()
+                        self.action_display_text = "Show me what you got!"
+                        self.action_display_time = 1000 # Show action display for 1 second
+                        self.action_display_start = pygame.time.get_ticks()  # Start the action display timer
                         print("pass turn!")
                     elif event.key == pygame.K_d:
                         guard = self.combat.player_guard()
@@ -311,7 +339,10 @@ class Game():
                                            self.settings.font,
                                            self.settings.text_duration)
                             )
-                        print("increased defense!")  
+                            self.action_display_text = "Guard!"
+                            self.action_display_time = 1000 # Show action display for 1 second
+                            self.action_display_start = pygame.time.get_ticks()  # Start the action display timer
+                            print("increased defense!")  
                     elif event.key == pygame.K_f:
                         healed = self.combat.player_heal(self.settings.heal_amount)     
                         if healed is not None:
@@ -324,6 +355,9 @@ class Game():
                                            self.settings.font,
                                            self.settings.text_duration)
                             )
+                            self.action_display_text = "Warcry!"
+                            self.action_display_time = 1000 # Show action display for 1 second
+                            self.action_display_start = pygame.time.get_ticks()  # Start the action display timer
                             print("healed!")
 
 if __name__ == '__main__':

@@ -81,7 +81,7 @@ class Demonic_Samurai(Enemy):
         #damage calculation
         self.damage = self.strength - target.defense
         target.hp -= self.damage
-        target.hurt()
+        target.hurt() # apply hurt animation to target
         if target.hp <= 0:
             target.hp = 0
             target.is_alive = False
