@@ -63,10 +63,10 @@ class Game():
 
         """health bars"""
         self.fighter_health_bar = HealthBar(self.settings.fighter_healthbar_x, self.settings.fighter_healthbar_y, 
-                                            self.fighter.hp, self.fighter.max_hp, self.settings.red, self.settings.green)
+                                            self.fighter.max_hp, self.settings.red, self.settings.green)
         self.demon_1_health_bar = HealthBar(self.demon_1.rect.x + self.settings.demon_healthbar_offset_x, self.demon_1.rect.y - self.settings.demon_healthbar_offset_y,
-                                             self.demon_1.hp, self.demon_1.max_hp, self.settings.red, self.settings.green, 
-                                             width= self.settings.demon_healthbar_width, height= self.settings.demon_healthbar_height) # custom w/h for enemy
+                                            self.demon_1.max_hp, self.settings.red, self.settings.green, 
+                                            width= self.settings.demon_healthbar_width, height= self.settings.demon_healthbar_height) # custom w/h for enemy
 
         # pass the fighter and enemy instances to the combat manager
         self.combat = Combat_Manager(self.fighter, self.demon_1)
