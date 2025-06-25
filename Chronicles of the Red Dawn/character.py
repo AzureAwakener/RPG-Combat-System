@@ -10,6 +10,7 @@ class Character():
         self.defense = defense
         self.base_defense = defense # base defense value for the character
         self.is_alive = True
+        self.pending_vidtory = False # flag to check if the character has won the battle
 
 class Fighter(Character):
     def __init__(self, x, y, name, character_scale, animation_cooldown):
@@ -20,7 +21,7 @@ class Fighter(Character):
         """Master List to store all actions"""
         self.animation_list = []
         self.frame_index = 0
-        self.action = 0 # 0 = idle, 1 = attack, 2 = hurt, 3 = guard, 4 = heal, 5 = dead, 6 = dying
+        self.action = 0 # 0 = idle, 1 = attack, 2 = hurt, 3 = guard, 4 = heal, 5 = dead, 6 = dying, 7 = victory
         self.character_scale = character_scale
         self.animation_cooldown = animation_cooldown # frame goes faster the lower the cooldown goes
         self.update_time = pygame.time.get_ticks()
@@ -80,14 +81,7 @@ class Fighter(Character):
             img = pygame.transform.scale(img, (img.get_width() * self.character_scale, img.get_height() * self.character_scale))
             temp_list.append(img)
         self.animation_list.append(temp_list)
-        #"""Victory Animation"""
-        #temp_list = []
-        #for i in range(4):
-        #    img = pygame.image.load(f'img/battlers/Brand/Victory/{i}.png').convert_alpha()
-        #    img = pygame.transform.flip(img, flip_x= 180, flip_y= 0)
-        #    img = pygame.transform.scale(img, (img.get_width() * self.character_scale, img.get_height() * self.character_scale))
-        #    temp_list.append(img)
-        #self.animation_list.append(temp_list)
+        # sets the initial image and rect for the character
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
@@ -100,19 +94,19 @@ class Fighter(Character):
         if pygame.time.get_ticks() - self.update_time > self.animation_cooldown:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
+        
+        frames = len(self.animation_list[self.action])
         #resets the animtion if there's no next image
-        if self.frame_index >= len(self.animation_list[self.action]):
-            if self.action == 5: #death animation stays on last frame
-                self.frame_index = len(self.animation_list[self.action]) - 1
-            elif self.action == 3: #guard animation stays on last frame
-                self.frame_index = len(self.animation_list[self.action]) - 1
-            elif self.action == 6 and self.hp > self.max_hp*0.4:
-                self.idle()
-            elif self.action != 6:
-                self.idle()
-            #checks for hp threshold to trigger low hp animation
-            if self.hp <= self.max_hp*0.4 and self.action != 5 and self.action != 4: #avoid playing when character is dead
+        if self.frame_index >= frames:
+            if self.action in [3, 5]: # Stays on last frame for guard and death animations
+                self.frame_index = frames - 1
+            # checks for hp threshold to trigger low hp animation
+            elif self.hp <= self.max_hp*0.4 and self.action != 5: #avoid playing when character is dead
                 self.low_health()
+            elif self.action == 6 and self.hp > self.max_hp*0.4: # if low health animation is playing and hp is above threshold, reset to idle
+                self.idle()
+            else:
+                self.idle() # reset to idle
 
     def idle(self):
         #sets variable to idle animation
@@ -129,7 +123,7 @@ class Fighter(Character):
             target.hp = 0
             target.is_alive = False
             target.death()
-            #self.victory()
+            self.pending_vidtory = True # set flag for victory if target dies
         #sets variable to attack animation
         self.action = 1
         self.frame_index = 0
@@ -168,11 +162,6 @@ class Fighter(Character):
         self.action = 6
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
-    
-    #def victory(self):
-    #    self.action = 7
-    #    self.frame_index = 0
-    #    self.update_time = pygame.time.get_ticks()
 
     def draw(self):
         self.screen.blit(self.image, self.rect)

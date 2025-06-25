@@ -28,10 +28,19 @@ key_a_icon = pygame.transform.scale(key_a_icon,
 key_s_icon = pygame.image.load('Chronicles of the Red Dawn/img/battle_interface/key_s_icon.png').convert_alpha()
 key_s_icon = pygame.transform.scale(key_s_icon, 
                                     (key_s_icon.get_width() * 3, key_s_icon.get_height() * 3))
+key_d_icon = pygame.image.load('Chronicles of the Red Dawn/img/battle_interface/key_d_icon.png').convert_alpha()
+key_d_icon = pygame.transform.scale(key_d_icon, 
+                                    (key_d_icon.get_width() * 3, key_d_icon.get_height() * 3))
+key_f_icon = pygame.image.load('Chronicles of the Red Dawn/img/battle_interface/key_f_icon.png').convert_alpha()
+key_f_icon = pygame.transform.scale(key_f_icon, 
+                                    (key_f_icon.get_width() * 3, key_f_icon.get_height() * 3))
 """Battle State"""
 defeat_img = pygame.image.load('Chronicles of the Red Dawn/img/battle_interface/Defeat.png').convert_alpha()
 defeat_img = pygame.transform.scale(defeat_img,
                                     (defeat_img.get_width() * 2, defeat_img.get_height() * 2))
+victory_img = pygame.image.load('Chronicles of the Red Dawn/img/battle_interface/Victory.png').convert_alpha()
+victory_img = pygame.transform.scale(victory_img,
+                                    (victory_img.get_width() * 2, victory_img.get_height() * 2))
 """Buttons"""
 play_img = pygame.image.load('Chronicles of the Red Dawn/img/buttons/Play.png').convert_alpha()
 exit_img = pygame.image.load('Chronicles of the Red Dawn/img/buttons/Exit.png').convert_alpha()

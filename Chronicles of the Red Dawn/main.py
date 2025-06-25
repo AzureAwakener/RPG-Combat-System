@@ -16,29 +16,42 @@ class Game():
         self.clock = pygame.time.Clock()
         self.settings = Settings()
 
-        """initialize the game window"""
+        # initialize the game screen
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         pygame.display.set_caption("Chronicles of the Red Dawn")
+        self.fullscreen = False  # Flag to track fullscreen state
 
-        """Game States"""
+        # initialize the game state
         self.game_state = 'main_menu' # Possible states: main_menu, battle, credits, game_over, victory, exit
 
-        """buttons"""
+        # --- Buttons for the main menu ---
         self.start_btn = Button(675, 300, asset.play_img, 1)
         self.exit_btn = Button(675, 400, asset.exit_img, 1)
         self.credit_btn = Button(675, 500, asset.credits_img, 1)
         self.return_btn = Button(625, 330, asset.return_img, 1)
         self.return_title = Button(10, 650, asset.return_img, 1)
 
-        # Battle state components are initially set to None
+        # battle state components are initially set to None
         # they will be set up by the `inititialize_battle` method
         self.fighter = None
         self.demon_1 = None
         self.fighter_health_bar = None
         self.demon_1_health_bar = None
         self.combat = None
+        
+        # dialogue flags
         self.dialogue = None
-        self.show_dialogue = False
+        self.show_dialogue = None
+        # midpoint dialogue
+        self.dialogue_midpoint = None
+        self.show_dialogue_midpoint = None 
+        self.midpoint_shown = None 
+        # post-battle dialogue
+        self.victory_dialogue = False
+        self.show_victory_dialogue = False
+        self.defeat_dialogue = False
+        self.show_defeat_dialogue = False
+
 
         # --- Music loader ---
         pygame.mixer.init()  # Initialize the mixer module
@@ -67,13 +80,34 @@ class Game():
 
         # pass the fighter and enemy instances to the combat manager
         self.combat = Combat_Manager(self.fighter, self.demon_1)
-        # Initialize the dialogue system
+        # initialize the dialogue system
         self.dialogue = Dialogue(self.settings.screen_width, self.settings.screen_height, self.settings.white, self.settings.font)
         self.dialogue_text = ["A demon has appeared!",
                               "Prepare for battle!"]
         self.dialogue_index = 0
         self.show_dialogue = True # Show dialogue at the start of the battle
 
+        # dialogue that appears at the midpoint of the battle
+        self.dialogue_midpoint = Dialogue(self.settings.screen_width, self.settings.screen_height, self.settings.white, self.settings.font)
+        self.dialogue_midpoint_text = ["You are strong, but I will not go down easily!",
+                                       "Prepare for my wrath!"]
+        self.dialogue_midpoint_index = 0
+        self.midpoint_shown = False  # Flag to track if midpoint dialogue has been shown
+
+        # post battle dialogue
+        self.victory_dialogue = Dialogue(self.settings.screen_width, self.settings.screen_height, self.settings.white, self.settings.font)
+        self.victory_dialogue_text = ["You have defeated the demon!",
+                                      "Return to the main menu to play again!"]
+        self.victory_dialogue_index = 0
+        self.show_victory_dialogue = False  # Flag to track if victory dialogue should be shown
+
+        self.defeat_dialogue = Dialogue(self.settings.screen_width, self.settings.screen_height, self.settings.white, self.settings.font)
+        self.defeat_dialogue_text = ["You have been defeated!",
+                                     "Return to the main menu to try again!"]
+        self.defeat_dialogue_index = 0
+        self.show_defeat_dialogue = False  # Flag to track if defeat dialogue should be shown
+
+        # music setup
         pygame.mixer.music.stop()  # Stop any currently playing music
         pygame.mixer.music.load(self.battle_theme)  # Load the battle theme music
         pygame.mixer.music.play(-1)
@@ -90,12 +124,18 @@ class Game():
             elif self.game_state == 'battle':
                 self._battle_screen()
                 self._update_battle_logic()
-                if not self.fighter.is_alive: # if the fighter is dead, change game state to game_over
-                    self.game_state = 'game_over'
+                if not self.fighter.is_alive:
+                    self.show_defeat_dialogue = True
+                    self.defeat_dialogue_index = 0
+                    self.game_state = 'post_battle'  # Change game state to post_battle
+                elif not self.demon_1.is_alive:
+                    self.show_victory_dialogue = True
+                    self.victory_dialogue_index = 0
+                    self.game_state = 'post_battle' # Change game state to post_battle
             elif self.game_state == 'credits':
                 self._credit_screen()
-            elif self.game_state == 'game_over':
-                self._game_over_screen()
+            elif self.game_state == 'post_battle':
+                self._post_battle_screen()
             elif self.game_state == 'victory':
                 pass
             elif self.game_state == 'exit':
@@ -151,13 +191,15 @@ class Game():
         """Renders the battle screen with the player and enemy characters, health bars, and combat interface."""
         # Draws all static elements of the battle screen
         self.draw_bg()
-        if not self.show_dialogue:
+        if not self.show_dialogue and not self.show_dialogue_midpoint:
             # If dialogue is not being shown, draw the battle interface
             self.draw_frame()
             self.draw_portrait()
             self.draw_keys()
             self.draw_text('Attack', self.settings.white, 150, 685)
             self.draw_text('End Turn', self.settings.white, 350, 685)
+            self.draw_text('Guard', self.settings.white, 550, 685)
+            self.draw_text('Heal', self.settings.white, 750, 685)
             # Draws the player's health and name
             self.draw_text(f'HP: {self.fighter.hp}', self.settings.white, 150, 35)
             self.draw_text(f'{self.fighter.name}', self.settings.white, 45, 115)
@@ -176,6 +218,17 @@ class Game():
         # Draws the dialogue box if it is set to be shown
         if self.show_dialogue and self.dialogue:
             self.dialogue.draw_dialogue(self.screen, self.dialogue_text[self.dialogue_index])
+        
+        # If the dialogue is at the midpoint, show the midpoint dialogue
+        if self.demon_1.hp <= self.demon_1.max_hp // 2 and not self.show_dialogue_midpoint and not self.midpoint_shown:
+            self.dialogue_midpoint_index = 0  # Reset the midpoint dialogue index
+            self.show_dialogue_midpoint = True  # Show the midpoint dialogue
+            self.midpoint_shown = True # prevents showing the midpoint dialogue again
+        
+        # Check if the dialogue midpoint should be shown
+        if self.show_dialogue_midpoint and self.dialogue_midpoint:
+            self.dialogue_midpoint.draw_dialogue(self.screen, self.dialogue_midpoint_text[self.dialogue_midpoint_index])
+            return  # Prevents drawing the rest of the UI while dialogue is up
 
         # Draws the damage texts above the enemy
         for dmg_text in self.damage_texts:
@@ -203,31 +256,53 @@ class Game():
             self.screen.blit(overlay_surface, (overlay_x, overlay_y))
             self.screen.blit(text_img, text_rect)
 
-    def _game_over_screen(self):
-        """Displays the game over screen with an option to return to the main menu."""
+    def _post_battle_screen(self):
+        """Handles the post-battle screen after the player has won or lost."""
         self.draw_bg()
-        self.draw_frame()
-        self.draw_portrait()
-        # Draw characters and their animations even if the player has lost
+        # Draw characters and their animations even if the battle is over
         self.fighter.update()
         self.fighter.draw()
-        self.fighter_health_bar.draw(self.fighter.hp)
-        self.draw_text(f'HP: {self.fighter.hp}', self.settings.white, 150, 35)
-        self.draw_text(f'{self.fighter.name}', self.settings.white, 45, 115)
         # Draw the enemy character and its health bar
         self.demon_1.update()
         self.demon_1.draw()
+        # --- post-battle dialogue handling ---
+        if self.show_victory_dialogue and self.victory_dialogue:
+            # Draws the victory dialogue if it is set to be shown
+            self.victory_dialogue.draw_dialogue(self.screen, self.victory_dialogue_text[self.victory_dialogue_index])
+            return
+        if self.show_defeat_dialogue and self.defeat_dialogue:
+            # Draws the defeat dialogue if it is set to be shown
+            self.defeat_dialogue.draw_dialogue(self.screen, self.defeat_dialogue_text[self.defeat_dialogue_index])
+            return
+        
+        self.draw_frame()
+        self.draw_portrait()
+        self.fighter_health_bar.draw(self.fighter.hp)
+        self.draw_text(f'HP: {self.fighter.hp}', self.settings.white, 150, 35)
+        self.draw_text(f'{self.fighter.name}', self.settings.white, 45, 115)
         self.demon_1_health_bar.draw(self.demon_1.hp)
         self.draw_text(f'{self.demon_1.name}', self.settings.red, self.demon_1_health_bar.x, self.demon_1_health_bar.y - 20)
-        
-        # Draws a semi-transparent overlay to dim the background when game is over
-        overlay = pygame.Surface((self.settings.screen_width, self.settings.screen_height), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 180))
-        self.screen.blit(overlay, (0, 0)) # Add a semi-transparent overlay
-        
-        # Draws the game over image and text
-        self.screen.blit(asset.defeat_img, (460, 150))
-        self.draw_text('return to main menu', self.settings.white, 540, 300)
+
+        if not self.fighter.is_alive:
+            # Draws a semi-transparent overlay to dim the background when game is over
+            overlay = pygame.Surface((self.settings.screen_width, self.settings.screen_height), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 180))
+            self.screen.blit(overlay, (0, 0)) # Add a semi-transparent overlay
+
+            # Draws the game over image and text
+            self.screen.blit(asset.defeat_img, (460, 150))
+            self.draw_text('return to main menu', self.settings.white, 540, 300)
+        elif not self.demon_1.is_alive:
+            # If the player has won, show victory text
+            # Draws a semi-transparent overlay to dim the background when game is over
+            overlay = pygame.Surface((self.settings.screen_width, self.settings.screen_height), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 180))
+            self.screen.blit(overlay, (0, 0)) # Add a semi-transparent overlay
+
+            # Draws the game over image and text
+            self.screen.blit(asset.victory_img, (460, 150))
+            self.draw_text('return to main menu', self.settings.white, 540, 300)
+            
 
         # Check if the return button is clicked to go back to the main menu
         if self.return_btn.draw(self.screen):
@@ -269,6 +344,8 @@ class Game():
     def draw_keys(self):
         self.screen.blit(asset.key_a_icon, (100, 675))
         self.screen.blit(asset.key_s_icon, (300, 675))
+        self.screen.blit(asset.key_d_icon, (500, 675))
+        self.screen.blit(asset.key_f_icon, (700, 675))
     
     def draw_text(self, text, text_color, x, y):
         img = self.settings.font.render(text, True, text_color)
@@ -293,14 +370,46 @@ class Game():
                     self.show_dialogue = False
             return # Prevent other key events from being processed when dialogue is active
         
+        # --- Midpoint dialogue input handling ---
+        if self.show_dialogue_midpoint and self.dialogue_midpoint:
+            if event.key in [pygame.K_RETURN, pygame.K_SPACE]:
+                self.dialogue_midpoint_index += 1
+                if self.dialogue_midpoint_index >= len(self.dialogue_midpoint_text):
+                    self.show_dialogue_midpoint = False
+            return # Prevent other key events from being processed when midpoint dialogue is active
+        
+        # --- Post-battle victory dialogue ---
+        if self.show_victory_dialogue and self.victory_dialogue:
+            if event.key in [pygame.K_RETURN, pygame.K_SPACE]:
+                self.victory_dialogue_index += 1
+                if self.victory_dialogue_index >= len(self.victory_dialogue_text):
+                    self.show_victory_dialogue = False
+            return
+
+        # --- Post-battle defeat dialogue ---
+        if self.show_defeat_dialogue and self.defeat_dialogue:
+            if event.key in [pygame.K_RETURN, pygame.K_SPACE]:
+                self.defeat_dialogue_index += 1
+                if self.defeat_dialogue_index >= len(self.defeat_dialogue_text):
+                    self.show_defeat_dialogue = False
+            return
+        
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_TAB:
-                pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
+            if event.key == pygame.K_F11:
+                # Toggle fullscreen mode
+                if not self.fullscreen:
+                    pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height), pygame.FULLSCREEN)
+                    self.fullscreen = True
+                else:
+                    pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
+                    self.fullscreen = False
             elif event.key == pygame.K_ESCAPE:
                 # Allows the user to return to main menu from any game state
-                if self.game_state in ['battle', 'credits', 'game_over']:
+                if self.game_state in ['battle', 'credits', 'post_battle']:
                     pygame.mixer.music.stop()  # Stop the battle music
                     self.game_state = 'main_menu' 
+
+            # Check for key presses only in battle state        
             elif self.game_state == 'battle': # Check for key presses only in battle state
                 if self.combat and self.combat.is_player_turn():
                     # Check for player actions based on key presses
