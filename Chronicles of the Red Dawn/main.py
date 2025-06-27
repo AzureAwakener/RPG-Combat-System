@@ -173,10 +173,8 @@ class Game():
         self.draw_text(
         'Dream Mix \n'
         'Prinbles \n'
-        'JDSherbert, AnthonyTTurtlez \n'
         'saukgp \n'
         'Rem Chronicle \n'
-        'russ123 \n'
         'Tiny Worlds \n'
         'Mounir Tohami \n'
         'vibrato08', self.settings.white, self.settings.credits_text_x, self.settings.credits_text_y
