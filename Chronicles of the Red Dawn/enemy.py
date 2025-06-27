@@ -11,8 +11,9 @@ class Enemy():
         self.is_alive = True
 
 class Demonic_Samurai(Enemy):
-    def __init__(self, x, y, name, character_scale, animation_cooldown):
-        super().__init__(name, hp = 200, strength = 48, defense = 10)
+    def __init__(self, x, y, name, character_scale, animation_cooldown, settings):
+        self.settings = settings # this line goes first to access settings for super.init()
+        super().__init__(name, hp = self.settings.demon_hp, strength = self.settings.demon_strength, defense = self.settings.demon_defense)
         self.character_scale = character_scale
         self.animation_cooldown = animation_cooldown #frame goes faster the lower the cooldown goes
         #-------------------------------------
@@ -25,7 +26,7 @@ class Demonic_Samurai(Enemy):
             self._load_animation("Hurt", 4),
             self._load_animation("Dead", 4),
         ]
-        self.frame_index = 0
+        self.frame_index = 0 # first image plays first [0]
         self.action = 0 # 0 - idle, 1 - attack, 2 - hurt, 3 - dead
         self.update_time = pygame.time.get_ticks()
 
@@ -36,6 +37,7 @@ class Demonic_Samurai(Enemy):
         self.screen = pygame.display.get_surface()
     
     def _load_animation(self, action_folder, frame_count):
+        """Method to draw animations and return it to temp_list[]."""
         temp_list = []
         for i in range(frame_count):
             img = pygame.image.load(f'Chronicles of the Red Dawn/img/enemies/demonic_samurai/{action_folder}/{i}.png').convert_alpha()
@@ -58,20 +60,20 @@ class Demonic_Samurai(Enemy):
                 self.idle()
 
     def idle(self):
-        #sets variable to idle animation
+        # sets variable to idle animation
         self.action = 0
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
 
     def attack(self, target):
-        #damage calculation
+        # damage calculation
         self.damage = self.strength - target.defense
         target.hp -= self.damage
         target.hurt() # apply hurt animation to target
         if target.hp <= 0:
             target.hp = 0
             target.is_alive = False
-            target.death()
+            target.death() # play death animation if target dies
         #sets variable to attack animation
         self.action = 1
         self.frame_index = 0

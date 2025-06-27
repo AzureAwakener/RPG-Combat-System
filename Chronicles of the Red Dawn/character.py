@@ -2,7 +2,7 @@ import pygame
 
 class Character():
     def __init__(self, name, hp, strength, defense):
-        """Basic Attributes"""
+        """Basic Attributes."""
         self.name = name
         self.hp = hp #current hp
         self.max_hp = hp #maximum hit points
@@ -12,8 +12,9 @@ class Character():
         self.is_alive = True
 
 class Fighter(Character):
-    def __init__(self, x, y, name, character_scale, animation_cooldown):
-        super().__init__(name, hp = 100, strength = 60, defense = 20)
+    def __init__(self, x, y, name, character_scale, animation_cooldown, settings):
+        self.settings = settings # this line goes first to access settings for super.init()
+        super().__init__(name, hp = self.settings.fighter_hp, strength= self.settings.fighter_strength, defense = self.settings.fighter_defense)
         self.character_scale = character_scale
         self.animation_cooldown = animation_cooldown # frame goes faster the lower the cooldown goes
         #-------------------------------------
@@ -29,7 +30,7 @@ class Fighter(Character):
             self._load_animation("Dead", 4),
             self._load_animation("Dying", 4),
         ]
-        self.frame_index = 0
+        self.frame_index = 0 #first image plays first [0]
         self.action = 0 # 0 = idle, 1 = attack, 2 = hurt, 3 = guard, 4 = heal, 5 = dead, 6 = dying
         self.update_time = pygame.time.get_ticks()
     
@@ -40,6 +41,7 @@ class Fighter(Character):
         self.screen = pygame.display.get_surface()
     
     def _load_animation(self, action_folder, frame_count):
+        """Method to draw animations and return it to temp_list[]."""
         temp_list = []
         for i in range(frame_count):
             img = pygame.image.load(f'Chronicles of the Red Dawn/img/battlers/Brand/{action_folder}/{i}.png').convert_alpha()
@@ -70,21 +72,21 @@ class Fighter(Character):
                 self.idle() # reset to idle
 
     def idle(self):
-        #sets variable to idle animation
+        # sets variable to idle animation
         self.action = 0
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
     
     def attack(self, target):
-        #damage calculation
+        # damage calculation
         self.damage = self.strength - target.defense
         target.hp -= self.damage
         target.hurt()
         if target.hp <= 0:
             target.hp = 0
             target.is_alive = False
-            target.death()
-        #sets variable to attack animation
+            target.death() # play death animation if target dies
+        # sets variable to attack animation
         self.action = 1
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()

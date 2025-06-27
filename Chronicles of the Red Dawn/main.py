@@ -58,8 +58,8 @@ class Game():
         """Initializes or resets the battle state for a new game or after a defeat."""
 
         """characters"""
-        self.fighter = Fighter(self.settings.fighter_x, self.settings.character_y, 'Bravehart', self.settings.character_scale, self.settings.fighter_cooldown)
-        self.demon_1 = Demonic_Samurai(self.settings.enemy_x, self.settings.character_y, 'Demon', self.settings.character_scale, self.settings.demon_cooldown)
+        self.fighter = Fighter(self.settings.fighter_x, self.settings.character_y, 'Bravehart', self.settings.character_scale, self.settings.fighter_cooldown, self.settings)
+        self.demon_1 = Demonic_Samurai(self.settings.enemy_x, self.settings.character_y, 'Ren', self.settings.character_scale, self.settings.demon_cooldown, self.settings)
 
         """health bars"""
         self.fighter_health_bar = HealthBar(self.settings.fighter_healthbar_x, self.settings.fighter_healthbar_y, 
@@ -72,28 +72,42 @@ class Game():
         self.combat = Combat_Manager(self.fighter, self.demon_1)
         # initialize the dialogue system
         self.dialogue = Dialogue(self.settings.screen_width, self.settings.screen_height, self.settings.white, self.settings.font)
-        self.dialogue_text = ["A demon has appeared!",
+        self.dialogue_text = ["Bravehart: A village transformed into demons overnight.",
+                              "Bravehart: Whoever did this has been plotting this for a long time.",
+                              "Bravehart: Speak of the devil.",
+                              "Ren: As expected of the Crimson Knight. Seems like drugs doesn't work on you anymore.",
+                              "Bravehart: That name already died alongside my kingdom.",
+                              "Ren: A man of your caliber shouldn't be working as a mere mercenary.",
+                              "Ren: Come and join us.",
+                              "Bravehart: I refuse.",
+                              "Ren: A pity.",
+                              "Ren: Guess I'll just have to kill you!",
                               "Prepare for battle!"]
         self.dialogue_index = 0
         self.show_dialogue = True # Show dialogue at the start of the battle
 
         # dialogue that appears at the midpoint of the battle
         self.dialogue_midpoint = Dialogue(self.settings.screen_width, self.settings.screen_height, self.settings.white, self.settings.font)
-        self.dialogue_midpoint_text = ["You are strong, but I will not go down easily!",
-                                       "Prepare for my wrath!"]
+        self.dialogue_midpoint_text = ["Ren: fufu",
+                                        "Ren: Impressive.",
+                                       "Ren: Show me everything you got!"]
         self.dialogue_midpoint_index = 0
         self.midpoint_shown = False  # Flag to track if midpoint dialogue has been shown
 
         # post battle dialogue
         self.victory_dialogue = Dialogue(self.settings.screen_width, self.settings.screen_height, self.settings.white, self.settings.font)
-        self.victory_dialogue_text = ["You have defeated the demon!",
-                                      "Thank you for trying out my demo!",
-                                      "Return to the main menu to play again!"]
+        self.victory_dialogue_text = ["Ren: Playtime's over",
+                                      "Ren: I'd love to fight a bit longer, but the Maestro is not gonna be happy with that.",
+                                      "Ren: Ta-ta~",
+                                      "Bravehart: Tch! How did I not realize I was fighting a fake body.",
+                                      "Bravehart: I have to move quick, maybe I can still save some people."
+                                      "Battle Over!",
+                                      "Thank you for playing my combat demo!"]
         self.victory_dialogue_index = 0
         self.show_victory_dialogue = False  # Flag to track if victory dialogue should be shown
 
         self.defeat_dialogue = Dialogue(self.settings.screen_width, self.settings.screen_height, self.settings.white, self.settings.font)
-        self.defeat_dialogue_text = ["You have been defeated!",
+        self.defeat_dialogue_text = ["Ren: How disappointing.",
                                      "Return to the main menu to try again!"]
         self.defeat_dialogue_index = 0
         self.show_defeat_dialogue = False  # Flag to track if defeat dialogue should be shown
@@ -261,7 +275,7 @@ class Game():
         self.screen.blit(asset.title_img, (0, 0))
     
     def draw_overlay(self):
-        # Draws a semi-transparent overlay to dim the background when game is over
+        """Draws a semi-transparent overlay to dim the background when game is over."""
         overlay = pygame.Surface((self.settings.screen_width, self.settings.screen_height), pygame.SRCALPHA)
         overlay.fill(self.settings.bg_overlay)
         self.screen.blit(overlay, (0, 0)) # Add a semi-transparent overlay
@@ -273,6 +287,7 @@ class Game():
         self.screen.blit(asset.actor1_icon, (self.settings.player_icon_x, self.settings.player_icon_y))
     
     def draw_keys(self):
+        """Draws all command image."""
         spacing = self.settings.keys_spacing
         x, y = self.settings.keys_icon_x, self.settings.keys_icon_y
         self.screen.blit(asset.key_a_icon, (x, y))
@@ -281,6 +296,7 @@ class Game():
         self.screen.blit(asset.key_f_icon, (x + 3 * spacing, y))
     
     def draw_text(self, text, text_color, x, y):
+        """General method to draw text."""
         img = self.settings.font.render(text, True, text_color)
         self.screen.blit(img, (x, y))
     
@@ -297,6 +313,7 @@ class Game():
         self.draw_text('return to main menu', self.settings.white, *self.settings.game_over_text_pos)
     
     def draw_action_display(self):
+        """Draws the image for the action"""
         text_img = self.settings.font.render(self.action_display_text, True, self.settings.white)
         text_rect = text_img.get_rect(center=(self.settings.screen_width // 2, self.settings.text_rect_height))
         # Draws a semi-transparent overlay behind the action display text
@@ -312,11 +329,13 @@ class Game():
         self.screen.blit(text_img, text_rect)
     
     def set_action_display(self, text):
+        """Displays the name of the action when performed."""
         self.action_display_text = text
         self.action_display_time = self.settings.action_display_duration  # Set the duration for which the action display text is shown
         self.action_display_start = pygame.time.get_ticks()  # Start the action display timer
     
     def draw_character(self):
+        """Centralized method to draw all character components."""
         # Draws the player character
         self.fighter.update()
         self.fighter.draw()
@@ -325,6 +344,7 @@ class Game():
         self.demon_1.draw()
     
     def draw_user_interface(self):
+        """Centralized method to draw all UI components."""
         white = self.settings.white
         keys_width, keys_height = self.settings.keys_width, self.settings.keys_height
         spacing = self.settings.keys_spacing
@@ -363,7 +383,7 @@ class Game():
                 self._check_keydown_events(event)
     
     def _advance_dialogue(self, event, flag_name, index_name, text_list):
-        # Advances the dialogue or midpoint dialogue based on key events.
+        """Advances the dialogue based on key events."""
         if getattr(self, flag_name) and getattr(self, index_name) is not None:
             if event.key in [pygame.K_RETURN, pygame.K_SPACE]:
                 # If the dialogue is being shown, advance to the next line
@@ -392,20 +412,21 @@ class Game():
                 self._handle_battle_keys(event) 
 
     def _handle_fullscreen_toggle(self):
-                # Toggle fullscreen mode
-                if not self.fullscreen:
-                    pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height), pygame.FULLSCREEN)
-                    self.fullscreen = True
-                else:
-                    pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
-                    self.fullscreen = False
+        """Toggles fullscreen mode."""
+        if not self.fullscreen:
+            pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height), pygame.FULLSCREEN)
+            self.fullscreen = True # trigeer fullscreen
+        else:
+            pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
+            self.fullscreen = False # return to windowed mode
     
     def _handle_escape(self):
-        # Allows the user to return to main menu from any game state
+        """Allows the user to return to main menu from any game state."""
         if self.game_state in ['battle', 'credits', 'post_battle']:
-            self.game_state = 'main_menu'
+            self.game_state = 'main_menu' # return to main menu
     
     def _handle_battle_keys(self, event):
+        """Handles key commands in battle screen."""
         if self.combat and self.combat.is_player_turn():
             # Check for player actions based on key presses
             # Player can attack, pass turn, or guard

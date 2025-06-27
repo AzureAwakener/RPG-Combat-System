@@ -3,7 +3,7 @@ class Combat_Manager():
     def __init__(self, player, enemies):
         self.player = player
         self.enemies = enemies
-        self.current_turn = random.choice([self.player, self.enemies])  # First action is randomized
+        self.current_turn = self.player  #random.choice([self.player, self.enemies])  # First action is randomized
         self.action_cooldown = 100 # Frame time before an action can be taken
         self.action_wait = 0 # Counter for action cooldown
 

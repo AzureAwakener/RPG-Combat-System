@@ -81,6 +81,16 @@ class Settings():
         # enemy pos
         self.enemy_x = 950
 
+        """Character Stats"""
+        # fighter
+        self.fighter_hp = 250
+        self.fighter_strength = 60
+        self.fighter_defense = 24
+        # demon
+        self.demon_hp = 375
+        self.demon_strength = 48
+        self.demon_defense = 17
+
         """Animation Settings"""
         # animation speed
         self.fighter_cooldown = 150

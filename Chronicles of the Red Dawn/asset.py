@@ -2,10 +2,10 @@ import pygame
 import settings
 
 setting = settings.Settings()
-pygame.display.init()
+pygame.display.init() # Initialize to prevent error when loading image before main.py init()
 display = pygame.display.set_mode((setting.screen_width, setting.screen_height))
 # --- Music ---
-battle_theme = 'Chronicles of the Red Dawn/ost/Apertio Floris.ogg'
+battle_theme = 'Chronicles of the Red Dawn/ost/Swordplay of the Seraph.wav'
 title_theme = 'Chronicles of the Red Dawn/ost/Stargazing Witch and the Twilight Castle_loop.ogg'
 #-------------------------------------
 #           Image Database
@@ -22,6 +22,7 @@ icon_frame = pygame.transform.scale(icon_frame,
 actor1_icon = pygame.image.load('Chronicles of the Red Dawn/img/battle_interface/brand_icon.png').convert_alpha()
 actor1_icon = pygame.transform.scale(actor1_icon, 
                                     (actor1_icon.get_width() * 1.5, actor1_icon.get_height() * 1.5))
+"""Command Keys"""
 key_a_icon = pygame.image.load('Chronicles of the Red Dawn/img/battle_interface/key_a_icon.png').convert_alpha()
 key_a_icon = pygame.transform.scale(key_a_icon, 
                                     (key_a_icon.get_width() * 3, key_a_icon.get_height() * 3))
